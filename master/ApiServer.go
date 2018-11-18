@@ -1,4 +1,4 @@
-package main
+package master
 
 import (
 	"net"
@@ -12,7 +12,7 @@ type ApiServer struct {
 }
 
 var (
-	//单例
+	//单例对象
 	G_apiServer *ApiServer
 )
 
@@ -22,7 +22,7 @@ func handleJobSave(w http.ResponseWriter, r *http.Request) {
 }
 
 //初始化服务
-func lnitApiServer(err error) {
+func InitApiServer() (err error) {
 	var (
 		mux        *http.ServeMux
 		listener   net.Listener
@@ -34,7 +34,7 @@ func lnitApiServer(err error) {
 	mux.HandleFunc("/job/save", handleJobSave)
 
 	//启动TCP监听
-	if listener, err = net.Listen("tcp", "8070"); err != nil {
+	if listener, err = net.Listen("tcp", ":8070"); err != nil {
 		return
 	}
 
