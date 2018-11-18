@@ -48,7 +48,7 @@ func lnitApiServer(err error) {
 	G_apiServer = &ApiServer{
 		httpServer: httpServer,
 	}
-
+	//启动了服务端
 	go httpServer.Serve(listener)
 
 	return
