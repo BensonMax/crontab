@@ -18,6 +18,11 @@ func main() {
 	//初始化线程
 	initEnv()
 
+	//加载配置
+	if master.InitConfig(""); err != nil {
+		goto ERR
+	}
+
 	//启动服务
 	if err = master.InitApiServer(); err != nil {
 		goto ERR
