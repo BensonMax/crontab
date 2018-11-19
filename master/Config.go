@@ -2,12 +2,13 @@ package master
 
 import (
 	"encoding/json"
+	"fmt"
 	"io/ioutil"
 )
 
 //程序配置
 type Config struct {
-	ApiPort         int `json:"airPort"`
+	ApiPort         int `json:"apiPort"`
 	ApiReadTimeout  int `json:"apiReadTimeout"`
 	ApiWriteTimeout int `json:"apiWriteTimeout"`
 }
@@ -17,7 +18,6 @@ var (
 )
 
 func InitConfig(filename string) (err error) {
-
 	var (
 		content []byte
 		conf    Config
@@ -28,8 +28,11 @@ func InitConfig(filename string) (err error) {
 		return
 	}
 
-	json.Unmarshal(content, &conf)
-
+	if err = json.Unmarshal(content, &conf); err != nil {
+		return
+	}
 	G_config = &conf
+
+	fmt.Println(conf)
 	return
 }

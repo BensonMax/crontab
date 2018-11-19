@@ -1,9 +1,9 @@
 package main
 
 import (
+	"crontab/master"
 	"flag"
 	"fmt"
-	"github.com/BensonMax/crontab/master"
 	"runtime"
 )
 
@@ -33,7 +33,8 @@ func main() {
 	initEnv()
 
 	//加载配置
-	if master.InitConfig(confFile); err != nil {
+
+	if err = master.InitConfig(confFile); err != nil {
 		goto ERR
 	}
 
@@ -42,6 +43,9 @@ func main() {
 		goto ERR
 
 	}
+
+	//正常退出
+	return
 
 ERR:
 	fmt.Println(err)
