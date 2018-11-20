@@ -19,6 +19,7 @@ var (
 
 //保存服务
 func handleJobSave(w http.ResponseWriter, r *http.Request) {
+	//任务保存到etcd中
 
 }
 

@@ -8,12 +8,27 @@
             <set />
           </value>
         </entry>
+        <entry key="$PROJECT_DIR$/common/Protocol.go">
+          <value>
+            <set />
+          </value>
+        </entry>
         <entry key="$PROJECT_DIR$/master/ApiServer.go">
           <value>
             <set />
           </value>
         </entry>
         <entry key="$PROJECT_DIR$/master/Config.go">
+          <value>
+            <set />
+          </value>
+        </entry>
+        <entry key="$PROJECT_DIR$/master/JobMgr.go">
+          <value>
+            <set />
+          </value>
+        </entry>
+        <entry key="$PROJECT_DIR$/master/main/JobMgr.go">
           <value>
             <set />
           </value>
