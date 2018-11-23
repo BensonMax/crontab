@@ -1,8 +1,8 @@
 package master
 
 import (
+	"crontab/common"
 	"encoding/json"
-	"github.com/BensonMax/crontab/common"
 	"net"
 	"net/http"
 	"strconv"
@@ -22,7 +22,7 @@ var (
 //保存服务
 func handleJobSave(resp http.ResponseWriter, req *http.Request) {
 	//任务保存到etcd中
-	//post job ={"name","job1","command":"echo hello","cronExpr","*****"}
+	//post job ={"name":"job1","command":"echo hello","cronExpr":"*/5****"}
 	var (
 		err     error
 		postJob string
@@ -45,7 +45,7 @@ func handleJobSave(resp http.ResponseWriter, req *http.Request) {
 		goto ERR
 	}
 	//5、返回正常应答 {"errno":0,"msg"}
-	if bytes, err = common.BuildResponse(0, "success", oldjob); err != nil {
+	if bytes, err = common.BuildResponse(0, "success", oldjob); err == nil {
 		resp.Write(bytes)
 	}
 	return
@@ -53,6 +53,36 @@ func handleJobSave(resp http.ResponseWriter, req *http.Request) {
 ERR:
 	//6,返回异常应答
 	if bytes, err = common.BuildResponse(-1, err.Error(), nil); err == nil {
+		resp.Write(bytes)
+	}
+}
+
+//删除任务接口
+// POST /job/delete name=job1
+func handleJobDelete(resp http.ResponseWriter, req *http.Request) {
+	var (
+		err    error
+		name   string
+		oldJob *common.Job
+		bytes  []byte
+	)
+	if err = req.ParseForm(); err != nil {
+		goto ERR
+	}
+	name = req.PostForm.Get("name")
+
+	//删除任务
+	if oldJob, err = G_JobMgr.DeleteJob(name); err != nil {
+		goto ERR
+	}
+
+	if bytes, err = common.BuildResponse(0, "success", oldJob); err == nil {
+		resp.Write(bytes)
+	}
+	return
+
+ERR:
+	if bytes, err = common.BuildResponse(-1, err.Error(), nil); err != nil {
 		resp.Write(bytes)
 	}
 }
@@ -68,6 +98,7 @@ func InitApiServer() (err error) {
 	//配置路由
 	mux = http.NewServeMux()
 	mux.HandleFunc("/job/save", handleJobSave)
+	mux.HandleFunc("/job/delete", handleJobDelete)
 
 	//启动TCP监听
 	if listener, err = net.Listen("tcp", ":"+strconv.Itoa(G_config.ApiPort)); err != nil {

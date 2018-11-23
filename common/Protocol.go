@@ -29,6 +29,5 @@ func BuildResponse(errno int, msg string, data interface{}) (resp []byte, err er
 
 	//2.序列化
 	resp, err = json.Marshal(response)
-
 	return
 }

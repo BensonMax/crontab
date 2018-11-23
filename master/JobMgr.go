@@ -2,8 +2,8 @@ package master
 
 import (
 	"context"
+	"crontab/common"
 	"encoding/json"
-	"github.com/BensonMax/crontab/common"
 	"go.etcd.io/etcd/clientv3"
 	"time"
 )
@@ -78,5 +78,32 @@ func (JobMgr *JobMgr) SaveJob(job *common.Job) (oldjob *common.Job, err error) {
 		}
 		oldjob = &oldjobObj
 	}
+	return
+}
+
+//删除任务
+func (JobMgr *JobMgr) DeleteJob(name string) (oldJob *common.Job, err error) {
+	var (
+		jobKey    string
+		delResp   *clientv3.DeleteResponse
+		oldJobObj common.Job
+	)
+
+	jobKey = "/cron/jobs" + name
+
+	//从etcd 中删除
+	if delResp, err = JobMgr.kv.Delete(context.TODO(), jobKey, clientv3.WithPrevKV()); err != nil {
+		return
+	}
+	//返回被删除的任务信息
+	if len(delResp.PrevKvs) != 0 {
+		//解析一下旧值，返回
+		if err = json.Unmarshal(delResp.PrevKvs[0].Value, &oldJobObj); err != nil {
+			err = nil
+			return
+		}
+		oldJob = &oldJobObj
+	}
+
 	return
 }
