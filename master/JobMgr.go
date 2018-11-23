@@ -1,6 +1,9 @@
 package master
 
 import (
+	"context"
+	"encoding/json"
+	"github.com/BensonMax/crontab/common"
 	"go.etcd.io/etcd/clientv3"
 	"time"
 )
@@ -44,5 +47,36 @@ func InitJobMgr() (err error) {
 		lease:  lease,
 	}
 
+	return
+}
+
+//面向对象，为JobMgr新建一个SaveJob方法，传入参数job 返回 olbjob，error
+func (JobMgr *JobMgr) SaveJob(job *common.Job) (oldjob *common.Job, err error) {
+	//把任务保存到/cron/job/任务名 ->json
+	var (
+		jobKey    string
+		jobValue  []byte
+		putResp   *clientv3.PutResponse
+		oldjobObj common.Job
+	)
+	//etcd key
+	jobKey = "/cron/jobs/" + job.Name
+	//任务信息job
+	if jobValue, err = json.Marshal(job); err != nil {
+		return
+	}
+
+	if putResp, err = JobMgr.kv.Put(context.TODO(), jobKey, string(jobValue), clientv3.WithPrevKV()); err != nil {
+		return
+	}
+
+	if putResp.PrevKv != nil {
+		//	对旧址进行反序列化
+		if err = json.Unmarshal(putResp.PrevKv.Value, &oldjobObj); err != nil {
+			err = nil
+			return
+		}
+		oldjob = &oldjobObj
+	}
 	return
 }

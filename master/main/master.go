@@ -1,10 +1,11 @@
 package main
 
 import (
-	"crontab/master"
 	"flag"
 	"fmt"
+	"github.com/BensonMax/crontab/master"
 	"runtime"
+	"time"
 )
 
 func initEnv() {
@@ -50,6 +51,9 @@ func main() {
 	}
 
 	//正常退出
+	for {
+		time.Sleep(1 * time.Second)
+	}
 	return
 
 ERR:
