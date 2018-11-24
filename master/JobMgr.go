@@ -89,7 +89,7 @@ func (JobMgr *JobMgr) DeleteJob(name string) (oldJob *common.Job, err error) {
 		oldJobObj common.Job
 	)
 
-	jobKey = "/cron/jobs" + name
+	jobKey = "/cron/jobs/" + name
 
 	//从etcd 中删除
 	if delResp, err = JobMgr.kv.Delete(context.TODO(), jobKey, clientv3.WithPrevKV()); err != nil {
