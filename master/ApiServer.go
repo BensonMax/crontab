@@ -1,8 +1,8 @@
 package master
 
 import (
-	"crontab/common"
 	"encoding/json"
+	"github.com/BensonMax/crontab/common"
 	"net"
 	"net/http"
 	"strconv"
@@ -87,6 +87,31 @@ ERR:
 	}
 }
 
+func handleJobList(resp http.ResponseWriter, req *http.Request) {
+	var (
+		jobList []*common.Job
+		err     error
+		bytes   []byte
+	)
+
+	//获取任务列表
+	if jobList, err = G_JobMgr.ListJobs(); err != nil {
+		goto ERR
+	}
+
+	//正常应答
+	if bytes, err = common.BuildResponse(0, "success", jobList); err == nil {
+		resp.Write(bytes)
+	}
+	return
+
+ERR:
+	//返回异常应答
+	if bytes, err = common.BuildResponse(-1, err.Error(), nil); err != nil {
+		resp.Write(bytes)
+	}
+}
+
 //初始化服务
 func InitApiServer() (err error) {
 	var (
@@ -99,6 +124,7 @@ func InitApiServer() (err error) {
 	mux = http.NewServeMux()
 	mux.HandleFunc("/job/save", handleJobSave)
 	mux.HandleFunc("/job/delete", handleJobDelete)
+	mux.HandleFunc("/job/list", handleJobList)
 
 	//启动TCP监听
 	if listener, err = net.Listen("tcp", ":"+strconv.Itoa(G_config.ApiPort)); err != nil {

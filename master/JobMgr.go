@@ -2,9 +2,10 @@ package master
 
 import (
 	"context"
-	"crontab/common"
 	"encoding/json"
+	"github.com/BensonMax/crontab/common"
 	"go.etcd.io/etcd/clientv3"
+	"go.etcd.io/etcd/mvcc/mvccpb"
 	"time"
 )
 
@@ -60,7 +61,7 @@ func (JobMgr *JobMgr) SaveJob(job *common.Job) (oldjob *common.Job, err error) {
 		oldjobObj common.Job
 	)
 	//etcd key
-	jobKey = "/cron/jobs/" + job.Name
+	jobKey = common.JOB_SAVA_DIR + job.Name
 	//任务信息job
 	if jobValue, err = json.Marshal(job); err != nil {
 		return
@@ -71,7 +72,7 @@ func (JobMgr *JobMgr) SaveJob(job *common.Job) (oldjob *common.Job, err error) {
 	}
 
 	if putResp.PrevKv != nil {
-		//	对旧址进行反序列化
+		//	对旧值进行反序列化
 		if err = json.Unmarshal(putResp.PrevKv.Value, &oldjobObj); err != nil {
 			err = nil
 			return
@@ -89,7 +90,7 @@ func (JobMgr *JobMgr) DeleteJob(name string) (oldJob *common.Job, err error) {
 		oldJobObj common.Job
 	)
 
-	jobKey = "/cron/jobs/" + name
+	jobKey = common.JOB_SAVA_DIR + name
 
 	//从etcd 中删除
 	if delResp, err = JobMgr.kv.Delete(context.TODO(), jobKey, clientv3.WithPrevKV()); err != nil {
@@ -105,5 +106,37 @@ func (JobMgr *JobMgr) DeleteJob(name string) (oldJob *common.Job, err error) {
 		oldJob = &oldJobObj
 	}
 
+	return
+}
+
+//获取List
+func (JobMgr *JobMgr) ListJobs() (jobList []*common.Job, err error) {
+	var (
+		dirKey  string
+		getResp *clientv3.GetResponse
+		kvPair  *mvccpb.KeyValue
+		job     *common.Job
+	)
+	//保存任务信息
+	dirKey = common.JOB_SAVA_DIR
+	//获取任务下所有的信息
+	if getResp, err = JobMgr.kv.Get(context.TODO(), dirKey, clientv3.WithPrefix()); err != nil {
+		return
+	}
+
+	//初始化数组空间
+	jobList = make([]*common.Job, 0)
+	//len(jobList) == 0
+
+	//遍历所有任务，进行反序列化
+	for _, kvPair = range getResp.Kvs {
+		job = &common.Job{}
+		if err = json.Unmarshal(kvPair.Value, job); err != nil {
+			err = nil
+			continue
+		}
+
+		jobList = append(jobList, job)
+	}
 	return
 }

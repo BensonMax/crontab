@@ -1,9 +1,9 @@
 package main
 
 import (
-	"crontab/master"
 	"flag"
 	"fmt"
+	"github.com/BensonMax/crontab/master"
 	"runtime"
 	"time"
 )
