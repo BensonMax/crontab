@@ -1,6 +1,9 @@
 package common
 
-import "encoding/json"
+import (
+	"encoding/json"
+	"strings"
+)
 
 /*
 [postman_collections]https://documenter.getpostman.com/view/2684216/RzfZQtBn
@@ -33,4 +36,22 @@ func BuildResponse(errno int, msg string, data interface{}) (resp []byte, err er
 	//2.序列化
 	resp, err = json.Marshal(response)
 	return
+}
+
+//反序列化Job
+func UnpackJob(value []byte) (ret *Job, err error) {
+	var (
+		job *Job
+	)
+	job = &Job{}
+	if err = json.Unmarshal(value, job); err != nil {
+		return
+	}
+	ret = job
+	return
+}
+
+//从etcd的key中提取任务名
+func ExtractJobName(jobkey string) string {
+	return strings.TrimPrefix(jobkey, JOB_SAVA_DIR)
 }

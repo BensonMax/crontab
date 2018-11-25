@@ -3,12 +3,12 @@ package main
 import (
 	"flag"
 	"fmt"
-	"github.com/BensonMax/crontab/master"
+	"github.com/BensonMax/crontab/worker"
 	"runtime"
 	"time"
 )
 
-//初始化线程数量
+//初始化线程数
 func initEnv() {
 	runtime.GOMAXPROCS(runtime.NumCPU())
 }
@@ -19,9 +19,9 @@ var (
 
 //解析命令行参数
 func initArgs() {
-	//master -config ./master.jon
+	//worker -config ./worker.jon
 	//master -h
-	flag.StringVar(&confFile, "config", "./master.json", "指定master.json")
+	flag.StringVar(&confFile, "config", "./worker.json", "worker.json")
 	flag.Parse()
 }
 
@@ -36,20 +36,13 @@ func main() {
 	initEnv()
 
 	//加载配置
-
-	if err = master.InitConfig(confFile); err != nil {
+	if err = worker.InitConfig(confFile); err != nil {
 		goto ERR
 	}
 
-	//启动任务管理器
-	if err = master.InitJobMgr(); err != nil {
-		fmt.Println(err)
+	//初始化任务管理器
+	if err = worker.InitJobMgr(); err != nil {
 		goto ERR
-	}
-	//启动ApiHttp服务
-	if err = master.InitApiServer(); err != nil {
-		goto ERR
-
 	}
 
 	//正常退出
