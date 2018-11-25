@@ -2,6 +2,9 @@ package common
 
 import "encoding/json"
 
+/*
+[postman_collections]https://documenter.getpostman.com/view/2684216/RzfZQtBn
+*/
 //定时任务
 type Job struct {
 	Name     string `json:"name"`     //任务名
