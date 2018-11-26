@@ -1,9 +1,9 @@
 package main
 
 import (
+	"crontab/worker"
 	"flag"
 	"fmt"
-	"github.com/BensonMax/crontab/worker"
 	"runtime"
 	"time"
 )
@@ -20,7 +20,6 @@ var (
 //解析命令行参数
 func initArgs() {
 	//worker -config ./worker.jon
-	//master -h
 	flag.StringVar(&confFile, "config", "./worker.json", "worker.json")
 	flag.Parse()
 }
@@ -37,6 +36,11 @@ func main() {
 
 	//加载配置
 	if err = worker.InitConfig(confFile); err != nil {
+		goto ERR
+	}
+
+	//启动调度器
+	if err = worker.InitScheduler(); err != nil {
 		goto ERR
 	}
 

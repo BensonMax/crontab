@@ -1,8 +1,8 @@
 package master
 
 import (
+	"crontab/common"
 	"encoding/json"
-	"github.com/BensonMax/crontab/common"
 	"net"
 	"net/http"
 	"strconv"

@@ -2,7 +2,6 @@ package worker
 
 import (
 	"encoding/json"
-	"fmt"
 	"io/ioutil"
 )
 
@@ -32,6 +31,5 @@ func InitConfig(filename string) (err error) {
 	}
 	G_config = &conf
 
-	fmt.Println(conf)
 	return
 }

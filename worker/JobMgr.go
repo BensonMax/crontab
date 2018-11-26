@@ -2,7 +2,7 @@ package worker
 
 import (
 	"context"
-	"github.com/BensonMax/crontab/common"
+	"crontab/common"
 	"go.etcd.io/etcd/clientv3"
 	"go.etcd.io/etcd/mvcc/mvccpb"
 	"time"
@@ -32,6 +32,7 @@ func (JobMgr *JobMgr) watchJobs() (err error) {
 		watchResp          clientv3.WatchResponse
 		watchEvent         *clientv3.Event
 		jobName            string
+		jobEvent           *common.JobEvent
 	)
 	//1.get一下/cron/jobs/目录下的所有任务，并且获知当前集群的revision
 	if getResp, err = JobMgr.kv.Get(context.TODO(), common.JOB_SAVA_DIR, clientv3.WithPrefix()); err != nil {
@@ -41,17 +42,19 @@ func (JobMgr *JobMgr) watchJobs() (err error) {
 	for _, kvpair = range getResp.Kvs {
 		//反序列化
 		if job, err = common.UnpackJob(kvpair.Value); err == nil {
-			//TODO:是把这个job同步给scheduler(调度协程)
+			jobEvent = common.BuildJobEvent(common.JOB_EVENT_SAVE, job)
+			//把这个job同步给scheduler(调度协程)
+			G_scheduler.PushJobEvent(jobEvent)
 		}
 	}
 	//从该revision向后监听变化事件
 	go func() { //监听协程
 		//从GET时刻的后续版本开始监听版本
 		watchStartRevision = getResp.Header.Revision + 1
-		watchChan = JobMgr.watcher.Watch(context.TODO(), common.JOB_SAVA_DIR, clientv3.WithRev(watchStartRevision))
+		watchChan = JobMgr.watcher.Watch(context.TODO(), common.JOB_SAVA_DIR, clientv3.WithRev(watchStartRevision), clientv3.WithPrefix())
 		//处理监听事件
 		for watchResp = range watchChan {
-			for watchEvent = range watchResp.Events {
+			for _, watchEvent = range watchResp.Events {
 				switch watchEvent.Type {
 				case mvccpb.PUT: //任务保存事件
 					//反序列化Job
@@ -59,13 +62,21 @@ func (JobMgr *JobMgr) watchJobs() (err error) {
 						//忽略无效json
 						continue
 					}
+					//构建一个更新Event
+					jobEvent = common.BuildJobEvent(common.JOB_EVENT_SAVE, job)
 
-				// TODO:推送给Scheduler
 				case mvccpb.DELETE: //任务被删除
 					// Delete /cron/jobs/job10
 					jobName = common.ExtractJobName(string(watchEvent.Kv.Value))
-					// TODO:推送一个给删除事件Scheduler
+
+					job = &common.Job{Name: jobName}
+
+					//构建一个删除Event
+					jobEvent = common.BuildJobEvent(common.JOB_EVENT_DELETE, job)
+
 				}
+				// 推送给Scheduler
+				G_scheduler.PushJobEvent(jobEvent)
 			}
 		}
 	}()
@@ -102,5 +113,9 @@ func InitJobMgr() (err error) {
 		lease:   lease,
 		watcher: watcher,
 	}
+
+	//启动任务监听
+	G_JobMgr.watchJobs()
+
 	return
 }

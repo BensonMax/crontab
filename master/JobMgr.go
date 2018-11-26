@@ -2,8 +2,8 @@ package master
 
 import (
 	"context"
+	"crontab/common"
 	"encoding/json"
-	"github.com/BensonMax/crontab/common"
 	"go.etcd.io/etcd/clientv3"
 	"go.etcd.io/etcd/mvcc/mvccpb"
 	"time"
@@ -52,7 +52,7 @@ func InitJobMgr() (err error) {
 }
 
 //面向对象，为JobMgr新建一个SaveJob方法，传入参数job 返回 olbjob，error
-func (JobMgr *JobMgr) SaveJob(job *common.Job) (oldjob *common.Job, err error) {
+func (jobMgr *JobMgr) SaveJob(job *common.Job) (oldjob *common.Job, err error) {
 	//把任务保存到/cron/job/任务名 ->json
 	var (
 		jobKey    string
@@ -67,7 +67,7 @@ func (JobMgr *JobMgr) SaveJob(job *common.Job) (oldjob *common.Job, err error) {
 		return
 	}
 
-	if putResp, err = JobMgr.kv.Put(context.TODO(), jobKey, string(jobValue), clientv3.WithPrevKV()); err != nil {
+	if putResp, err = jobMgr.kv.Put(context.TODO(), jobKey, string(jobValue), clientv3.WithPrevKV()); err != nil {
 		return
 	}
 
@@ -83,7 +83,7 @@ func (JobMgr *JobMgr) SaveJob(job *common.Job) (oldjob *common.Job, err error) {
 }
 
 //删除任务
-func (JobMgr *JobMgr) DeleteJob(name string) (oldJob *common.Job, err error) {
+func (jobMgr *JobMgr) DeleteJob(name string) (oldJob *common.Job, err error) {
 	var (
 		jobKey    string
 		delResp   *clientv3.DeleteResponse
@@ -93,7 +93,7 @@ func (JobMgr *JobMgr) DeleteJob(name string) (oldJob *common.Job, err error) {
 	jobKey = common.JOB_SAVA_DIR + name
 
 	//从etcd 中删除
-	if delResp, err = JobMgr.kv.Delete(context.TODO(), jobKey, clientv3.WithPrevKV()); err != nil {
+	if delResp, err = jobMgr.kv.Delete(context.TODO(), jobKey, clientv3.WithPrevKV()); err != nil {
 		return
 	}
 	//返回被删除的任务信息
@@ -105,7 +105,6 @@ func (JobMgr *JobMgr) DeleteJob(name string) (oldJob *common.Job, err error) {
 		}
 		oldJob = &oldJobObj
 	}
-
 	return
 }
 
@@ -165,4 +164,5 @@ func (JobMgr *JobMgr) KillJob(name string) (err error) {
 		return
 	}
 	return
+
 }
