@@ -56,7 +56,7 @@ func (scheduler *Scheduler) TrySchedule() (scheduleAfter time.Duration) {
 	// 1.遍历所有任务
 	for _, jobPlan = range scheduler.jobPlanTable {
 		if jobPlan.NextTime.Before(now) || jobPlan.NextTime.Equal(now) {
-			// TODO:尝试执行任务
+			// 尝试执行任务
 			fmt.Println("执行任务", jobPlan.Job.Name)
 			jobPlan.NextTime = jobPlan.Expr.Next(now) //更新下次执行时间
 		}

@@ -14,7 +14,7 @@ import (
 type Job struct {
 	Name     string `json:"name"`     //任务名
 	Command  string `json:"command"`  //shel 命令
-	CronExpr string `json:"cornExpr"` //cron 表达式
+	CronExpr string `json:"cronExpr"` //cron 表达式
 }
 
 //任务调度计划

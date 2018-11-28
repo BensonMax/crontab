@@ -22,7 +22,7 @@ var (
 //保存服务
 func handleJobSave(resp http.ResponseWriter, req *http.Request) {
 	//任务保存到etcd中
-	//post job ={"name":"job1","command":"echo hello","cronExpr":"*/5****"}
+	//post job ={"name":"job1","command":"echo hello","cronExpr":"*/5 * * * *"}
 	var (
 		err     error
 		postJob string
