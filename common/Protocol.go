@@ -24,6 +24,13 @@ type JobSchedulePlan struct {
 	NextTime time.Time            //下次调度时间
 }
 
+//任务执行状态
+type JobExecuteInfo struct {
+	Job      *Job      //任务信息
+	PlanTime time.Time //理论上的调度时间
+	RealTime time.Time //实际的调度时间
+}
+
 //HTTP接口应答
 type Response struct {
 	Error int         `json:"error"`
@@ -94,6 +101,15 @@ func BuildJobSchedulePlan(job *Job) (jobSchedulePlan *JobSchedulePlan, err error
 		Job:      job,
 		Expr:     expr,
 		NextTime: expr.Next(time.Now()),
+	}
+	return
+}
+
+func BuildJobExecuteInfo(jobSchedulePlan *JobSchedulePlan) (jobExecuteInfo *JobExecuteInfo) {
+	jobExecuteInfo = &JobExecuteInfo{
+		Job:      jobSchedulePlan.Job,
+		PlanTime: jobSchedulePlan.NextTime, //计划调度时间e
+		RealTime: time.Now(),               //真实时间
 	}
 	return
 }
