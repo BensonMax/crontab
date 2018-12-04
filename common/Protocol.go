@@ -44,6 +44,15 @@ type JobEvent struct {
 	Job       *Job
 }
 
+//任务执行结果
+type JobExecteResult struct {
+	ExecuteInfo *JobExecuteInfo // 执行状态
+	Output      []byte          // 脚本输出
+	Err         error           // 脚本错误原因
+	StartTime   time.Time       //启动时间
+	EndTime     time.Time       //结束时间
+}
+
 //应答方法
 func BuildResponse(errno int, msg string, data interface{}) (resp []byte, err error) {
 	//定义一个response
@@ -108,7 +117,7 @@ func BuildJobSchedulePlan(job *Job) (jobSchedulePlan *JobSchedulePlan, err error
 func BuildJobExecuteInfo(jobSchedulePlan *JobSchedulePlan) (jobExecuteInfo *JobExecuteInfo) {
 	jobExecuteInfo = &JobExecuteInfo{
 		Job:      jobSchedulePlan.Job,
-		PlanTime: jobSchedulePlan.NextTime, //计划调度时间e
+		PlanTime: jobSchedulePlan.NextTime, //计划调度时间
 		RealTime: time.Now(),               //真实时间
 	}
 	return
